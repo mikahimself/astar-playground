@@ -1,0 +1,21 @@
+{
+  "name": "astar-playground",
+  "version": "1.0.0",
+  "description": "Project for testing various A star implementations",
+  "main": "server.js",
+  "scripts": {
+    "start": "nodemon server.js 3000",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "https://github.com/mikahimself",
+  "license": "ISC",
+  "dependencies": {
+    "cors": "^2.8.5",
+    "express": "^4.17.1",
+    "nedb": "^1.8.0",
+    "socket.io": "^4.1.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7"
+  }
+}

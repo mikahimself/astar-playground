@@ -59,7 +59,7 @@ function AStar(heuristicType) {
 
             // If the item with the lowest f is the goal, we're done.
             if (current.equals(this.end)) {
-                var path = findPath(current);
+                var path = this.findPath(current);
                 // drawSetSquares();
                 // for (let cell of path) {
                 //     cell.show(ctx, "#000", "#FFC107")

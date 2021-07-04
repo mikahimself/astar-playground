@@ -60,6 +60,10 @@
         var heuristicType = "euclidean";
         var loopSet = false;
         var assStar = new AStar(heuristicType);
+        var prevSquare  = new Cell(0,0,0,0);
+        var currentSquare  = new Cell(0,0,0,0);
+        var path;
+
 
         setupPage()
         getData();
@@ -67,15 +71,13 @@
         function setupPage() {
             document.querySelectorAll("input[name='heuristic-type']").forEach((input) => {
                 input.addEventListener("change", setHeuristicType);
-            })
+            });
+            canvas.addEventListener("mousemove", getCanvasPosition);
         }
 
         function setHeuristicType(e) {
             heuristicType = e.target.value;
             assStar.setHeuristicType(heuristicType);
-
-            //resetValues();
-            //astar();
         }
 
         async function getData() {
@@ -110,28 +112,31 @@
             end = mapData[38][37];
             drawMap(data)
             openSet.map(item => item.show(ctx, "#000", "#0f0"));
-            
-            //astar();
-
+            prevSquare.width = width;
+            prevSquare.height = height;
+            drawMap(baseMap)
+            //drawSetSquares(open,closed);
+            currentSquare.width = width;
+            currentSquare.height = height;
         }
 
-        function getHeuristic(a, b) {
-            if (heuristicType == "euclidean") {
-                return Math.sqrt(((b.x - a.x) * (b.x - a.x)) + ((b.y - a.y) * (b.y - a.y))); // Euclidean distance
-            } else {
-                return Math.abs(b.x - a.x) + Math.abs(b.y - a.y); // Manhattan distance
-            }
-        }
+        // function getHeuristic(a, b) {
+        //     if (heuristicType == "euclidean") {
+        //         return Math.sqrt(((b.x - a.x) * (b.x - a.x)) + ((b.y - a.y) * (b.y - a.y))); // Euclidean distance
+        //     } else {
+        //         return Math.abs(b.x - a.x) + Math.abs(b.y - a.y); // Manhattan distance
+        //     }
+        // }
 
-        function resetValues() {
-            drawnClosed = [];
-            drawnOpen = [];
-            closedSet = [];
-            openSet = [];
-            openSet.push(start);
-            drawMap(baseMap);
-            loopSet = true;
-        }
+        // function resetValues() {
+        //     drawnClosed = [];
+        //     drawnOpen = [];
+        //     closedSet = [];
+        //     openSet = [];
+        //     openSet.push(start);
+        //     drawMap(baseMap);
+        //     loopSet = true;
+        // }
 
         function getCanvasClick(e) {
             drawMap(baseMap);
@@ -141,7 +146,10 @@
             // resetValues();
             end = mapData[gridY][gridX];
             start = mapData[0][0];
-            var path = assStar.findRoute(start, end);
+            path = assStar.findRoute(start, end);
+            openSet = path[1];
+            closedSet = path[2];
+            // console.log(typeof openSet)
             drawSetSquares(path[1], path[2]);
             // console.log()
             for (let cell of path[0]) {
@@ -149,89 +157,124 @@
             }
         }
 
-        function findPath(pointFrom) {
-            path = [];
-            path.push(pointFrom)
-            var temp = pointFrom;
-            while (temp.previous) {
-                path.push(temp.previous);
-                temp = temp.previous;
-            }
-            return path;
-        }
-
-        function astar() {
-            counter = 0;
-            
-            // Loop while there are items to investigate
-            while (openSet.length > 0 && loopSet) {
-                // Find the item with the lowest f
-                var indexOfLowestF = 0;
-
-                openSet.map((item, index) => {
-                    if (item.f < openSet[indexOfLowestF].f) {
-                        indexOfLowestF = index;
-                    }
-                });
-
-                // Set the Cell with the lowest f as the current item
-                let current = openSet[indexOfLowestF];
-                // Then move it from the openSet to the closedSet
-                openSet = openSet.filter((item, index) => !(item.equals(current)));
-                closedSet.push(current);
-
-                // If the item with the lowest f is the goal, we're done.
-                if (current.equals(end)) {
-                    loopSet = false;
-                    var path = findPath(current);
-                    loopSet = false;
-                    drawSetSquares();
-                    for (let cell of path) {
-                        cell.show(ctx, "#000", "#FFC107")
-                    }
-                    break;
-                };
-
-
-                // check the current item's neighbors
-                for (let neighbor of current.neighbors) {
-                    // process only items that have not been processed
-                    if (!closedSet.includes(neighbor)) {
-                        // assign temporary g score. Since this is a neighbor, 
-                        // it's cost is the current item's g score, plus 1.
-                        var tempG = current.g + 1;
-                        // Check if we've already been here with a lower g.
-                        // If not, update g score
-                        if (openSet.includes(neighbor)) {
-                            if  (tempG < neighbor.g) {
-                                neighbor.g = tempG;
-                            }
-                        // otherwise, add g score and add neighbor to open set.
-                        } else {
-                            neighbor.g = tempG;
-                            // Here, calculate the heuristic, that is, an educated
-                            // guess about the distance to the end from the neighbor.
-                            // Currently just the euclidean distance
-                            neighbor.h = getHeuristic(neighbor, end);
-                            neighbor.f = neighbor.g + neighbor.h;
-                            // Keep track of the cell that we came from
-                            neighbor.previous = current;
-                            openSet.push(neighbor)
-                        }
-                    }
+        function drawPath() {
+            if (typeof path != "undefined") {
+                // console.log("path", path)
+                for (let cell of path[0]) {
+                    cell.show(ctx, "#000", "#FFC107")
                 }
             }
         }
 
+        function getCanvasPosition(e) {
+            var gridX = Math.floor(e.offsetX / width);
+            var gridY = Math.floor(e.offsetY / height);
+            if (gridX == currentSquare.x && gridY == currentSquare.y) {
+                //;
+            } else {
+                prevSquare.x = currentSquare.x;
+                prevSquare.y = currentSquare.y;
+                currentSquare.x = gridX;
+                currentSquare.y = gridY;
+                prevSquare.show(ctx, "#fff", "#fff")
+                drawSetSquares(openSet, closedSet)
+                drawPath();
+                currentSquare.show(ctx, "#000", "#0f0");
+                
+            }
+        }
+
+        // function findPath(pointFrom) {
+        //     path = [];
+        //     path.push(pointFrom)
+        //     var temp = pointFrom;
+        //     while (temp.previous) {
+        //         path.push(temp.previous);
+        //         temp = temp.previous;
+        //     }
+        //     return path;
+        // }
+
+        // function astar() {
+        //     counter = 0;
+            
+        //     // Loop while there are items to investigate
+        //     while (openSet.length > 0 && loopSet) {
+        //         // Find the item with the lowest f
+        //         var indexOfLowestF = 0;
+
+        //         openSet.map((item, index) => {
+        //             if (item.f < openSet[indexOfLowestF].f) {
+        //                 indexOfLowestF = index;
+        //             }
+        //         });
+
+        //         // Set the Cell with the lowest f as the current item
+        //         let current = openSet[indexOfLowestF];
+        //         // Then move it from the openSet to the closedSet
+        //         openSet = openSet.filter((item, index) => !(item.equals(current)));
+        //         closedSet.push(current);
+
+        //         // If the item with the lowest f is the goal, we're done.
+        //         if (current.equals(end)) {
+        //             loopSet = false;
+        //             var path = findPath(current);
+        //             loopSet = false;
+        //             drawSetSquares();
+        //             for (let cell of path) {
+        //                 cell.show(ctx, "#000", "#FFC107")
+        //             }
+        //             break;
+        //         };
+
+
+        //         // check the current item's neighbors
+        //         for (let neighbor of current.neighbors) {
+        //             // process only items that have not been processed
+        //             if (!closedSet.includes(neighbor)) {
+        //                 // assign temporary g score. Since this is a neighbor, 
+        //                 // it's cost is the current item's g score, plus 1.
+        //                 var tempG = current.g + 1;
+        //                 // Check if we've already been here with a lower g.
+        //                 // If not, update g score
+        //                 if (openSet.includes(neighbor)) {
+        //                     if  (tempG < neighbor.g) {
+        //                         neighbor.g = tempG;
+        //                     }
+        //                 // otherwise, add g score and add neighbor to open set.
+        //                 } else {
+        //                     neighbor.g = tempG;
+        //                     // Here, calculate the heuristic, that is, an educated
+        //                     // guess about the distance to the end from the neighbor.
+        //                     // Currently just the euclidean distance
+        //                     neighbor.h = getHeuristic(neighbor, end);
+        //                     neighbor.f = neighbor.g + neighbor.h;
+        //                     // Keep track of the cell that we came from
+        //                     neighbor.previous = current;
+        //                     openSet.push(neighbor)
+        //                 }
+        //             }
+        //         }
+        //     }
+        // }
+
         function drawSetSquares(openSet, closedSet) {
-            let newToDraw = closedSet.filter(item => !drawnClosed.includes(item));
-            drawnClosed.push(...newToDraw);
-            let newOpenToDraw = openSet.filter(item => !drawnOpen.includes(item) && !drawnClosed.includes(item));
-            drawnOpen.push(...newOpenToDraw)
+            let newToDraw;
+            // console.log(closedSet)
+            if (closedSet && closedSet.length > 0) {
+                // console.log(closedSet)
+                newToDraw = closedSet.filter(item => !drawnClosed.includes(item))
+                drawnClosed.push(...newToDraw)
+                closedSet.map(item => item.show(ctx, "#000", "#D81B60"))
+            }
+            if (typeof openSet != "undefined" && openSet.length > 0) {
+                // console.log(typeof openSet)
+                let newOpenToDraw = openSet.filter(item => !drawnOpen.includes(item) && !drawnClosed.includes(item));
+                drawnOpen.push(...newOpenToDraw)
+                openSet.map(item => item.show(ctx, "#000", "#1E88E5"));
+            }
             //newToDraw.map(item => item.show(ctx, "#000", "#D81B60"))
-            closedSet.map(item => item.show(ctx, "#000", "#D81B60"))
             //newOpenToDraw.map(item => item.show(ctx, "#000", "#1E88E5"));
-            openSet.map(item => item.show(ctx, "#000", "#1E88E5"));
         }
 
         function drawMap(map) {

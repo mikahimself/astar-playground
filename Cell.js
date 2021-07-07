@@ -1,13 +1,25 @@
 function Cell(x, y, width, height) {
-    this.x = x;
-    this.y = y;
-    this.width = width;
-    this.height = height;
+    this.x = x || 0;
+    this.y = y || 0;
+    this.width = width || 10;
+    this.height = height || 10;
     this.neighbors = [];
     this.f = 0;
     this.g = 0; // cost of path from start node to n
     this.h = 0; // heuristic that estimates the cost of cheapest path from n to the goal
     this.previous = undefined;
+    this.wall = false;
+    this.cost = 1;
+
+    if (Math.random() < 0.25) {
+        this.wall = true;
+    }
+
+    this.getRandomIntInclusive = function(min, max) {
+        min = Math.ceil(min);
+        max = Math.floor(max);
+        return Math.floor(Math.random() * (max - min + 1) + min); //The maximum is inclusive and the minimum is inclusive
+      }
 
     // Checks equality with other Cells
     this.equals = function(other) {

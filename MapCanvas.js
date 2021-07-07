@@ -7,12 +7,14 @@ function MapCanvas(aStar) {
     this.endPos;
     this.tileH;
     this.tileW;
-    this.path;
+    this.path = [];
     this.drawnOpen = [];
     this.drawnClosed = [];
     this.aStar = aStar;
-    this.prevSquare = new Cell(0,0,0,0);
-    this.currentSquare = new Cell(0,0,0,0);
+    this.prevSquare = new Cell();
+    this.currentSquare = new Cell();
+    this.walls = [];
+    this.forests = [];
 
     this.getData = async function() {
         var mapData = await fetch("http://localhost:3000/api/map", {
@@ -26,10 +28,6 @@ function MapCanvas(aStar) {
         this.canvas = document.getElementById("myCanvas");
         this.ctx = this.canvas.getContext("2d");
         this.canvas.addEventListener("click", this.getCanvasClick.bind(this));
-
-        // document.querySelectorAll("input[name='heuristic-type']").forEach((input) => {
-        //     input.addEventListener("change", setHeuristicType);
-        // });
         this.canvas.addEventListener("mousemove", this.drawPointerSquare.bind(this));
     }
 
@@ -39,7 +37,7 @@ function MapCanvas(aStar) {
     }
 
     this.setupMap = async function(data) {
-        baseMap = data;
+        this.baseMap = data;
         this.mapData = new Array(data.length);
         this.setMeasurements(data);
 
@@ -49,17 +47,25 @@ function MapCanvas(aStar) {
         for (let y = 0; y < data.length; y++) {
              for (let x = 0; x < data[y].length; x++) {
                  this.mapData[y][x] = new Cell(x, y, this.tileW, this.tileH);
+                 if (this.mapData[y][x].wall) {
+                     this.walls.push(this.mapData[y][x]);
+                 }
+                 if (data[y][x] == 1) {
+                     this.forests.push(this.mapData[y][x]);
+                     this.mapData[y][x].cost = 4;
+                 }
              }
         }
         // Map neighbors
         this.mapData.map(subMap => subMap.map(item => item.getNeighbors(this.mapData)));
 
-        this.startPos = this.mapData[5][8];
+        this.startPos = this.mapData[2][8];
         this.drawMap(data)
         this.prevSquare.width = this.tileW;
         this.prevSquare.height = this.tileH;
         this.currentSquare.width = this.tileW;
         this.currentSquare.height = this.tileH;
+        this.drawWalls();
     }
 
     this.getCanvasPosition = function(e) {
@@ -68,15 +74,28 @@ function MapCanvas(aStar) {
 
     this.getCanvasClick = function(e) {
         var [ gridX, gridY ] = this.getCanvasPosition(e);
-        this.drawMap(baseMap);
 
-        this.endPos = this.mapData[gridY][gridX];
-        this.startPos = this.mapData[5][8];
-        this.path = this.aStar.findRoute(this.startPos, this.endPos);
-        this.drawSetSquares(this.path[1], this.path[2]);
-        for (let cell of this.path[0]) {
-            cell.show(this.ctx, "#000", "#FFC107")
+        if (this.mapData[gridY][gridX].wall) {
+            return;    
         }
+        
+        this.drawMap(this.baseMap);
+        
+        this.endPos = this.mapData[gridY][gridX];
+        this.startPos = this.mapData[2][8];
+        this.path = this.aStar.findRoute(this.startPos, this.endPos);
+        console.log(this.path)
+        if (this.path) {
+            this.drawSetSquares(this.path[1], this.path[2]);
+            //this.drawForests();
+
+            for (let cell of this.path[0]) {
+                cell.show(this.ctx, "#000", "#FFC107")
+            }
+        } else {
+            console.log("no dice")
+        }
+        this.drawWalls();
     }
 
     this.drawPointerSquare = function(e) {
@@ -92,13 +111,22 @@ function MapCanvas(aStar) {
             if (this.path) {
                 this.drawSetSquares(this.path[1], this.path[2]);
             }
+            // this.drawForests();
+            let tempPath = this.aStar.findRoute(this.startPos, this.mapData[gridY][gridX]);
+            if (tempPath) {
+                this.path = tempPath;
+                this.drawMap(this.baseMap);
+                this.drawSetSquares(this.path[1], this.path[2]);
+            }
+            
             this.drawPath();
             this.currentSquare.show(this.ctx, "#000", "#0f0");
         }
+        this.drawWalls();
     }
 
     this.drawPath = function() {
-        if (typeof this.path != "undefined") {
+        if (this.path.length > 0) {
             for (let cell of this.path[0]) {
                 cell.show(this.ctx, "#000", "#FFC107")
             }
@@ -131,6 +159,18 @@ function MapCanvas(aStar) {
             let newOpenToDraw = openSet.filter(item => !this.drawnOpen.includes(item) && !this.drawnClosed.includes(item));
             this.drawnOpen.push(...newOpenToDraw)
             openSet.map(item => item.show(this.ctx, "#000", "#1E88E5"));
+        }
+    }
+
+    this.drawWalls = function() {
+        for (let wall of this.walls) {
+            wall.show(this.ctx, "#111", "#333");
+        }
+        
+    }
+    this.drawForests = function() {
+        for (let forest of this.forests) {
+            forest.show(this.ctx, "#0f0", "#0f0");
         }
     }
 }

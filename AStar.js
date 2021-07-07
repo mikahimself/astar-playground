@@ -39,6 +39,7 @@ function AStar(heuristicType) {
         this.start = start;
         this.end = end;
         this.openSet.push(start);
+        var current;
 
         // Loop while there are items to investigate
         while (this.openSet.length > 0) {
@@ -52,7 +53,7 @@ function AStar(heuristicType) {
             });
 
             // Set the Cell with the lowest f as the current item
-            let current = this.openSet[indexOfLowestF];
+            current = this.openSet[indexOfLowestF];
             // Then move it from the openSet to the closedSet
             this.openSet = this.openSet.filter((item) => !(item.equals(current)));
             this.closedSet.push(current);
@@ -65,16 +66,15 @@ function AStar(heuristicType) {
                 //     cell.show(ctx, "#000", "#FFC107")
                 // }
                 return [path, this.openSet, this.closedSet];
-            };
-
+            }
 
             // check the current item's neighbors
             for (let neighbor of current.neighbors) {
                 // process only items that have not been processed
-                if (!this.closedSet.includes(neighbor)) {
+                if (!this.closedSet.includes(neighbor) && !neighbor.wall) {
                     // assign temporary g score. Since this is a neighbor, 
                     // it's cost is the current item's g score, plus 1.
-                    var tempG = current.g + 1;
+                    var tempG = current.g + neighbor.cost;
                     // Check if we've already been here with a lower g.
                     // If not, update g score
                     if (this.openSet.includes(neighbor)) {
@@ -96,6 +96,7 @@ function AStar(heuristicType) {
                 }
             }
         }
+        return false;
     }
 
 

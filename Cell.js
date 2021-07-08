@@ -1,4 +1,4 @@
-function Cell(x, y, width, height) {
+function Cell(x, y, width, height, type) {
     this.x = x || 0;
     this.y = y || 0;
     this.width = width || 10;
@@ -8,12 +8,12 @@ function Cell(x, y, width, height) {
     this.g = 0; // cost of path from start node to n
     this.h = 0; // heuristic that estimates the cost of cheapest path from n to the goal
     this.previous = undefined;
-    this.wall = false;
-    this.cost = 1;
-
-    if (Math.random() < 0.25) {
-        this.wall = true;
-    }
+    this.type = type || 0;
+    this.wall = this.type == 1;
+    this.cellCost = [1, Infinity, 8, 1, 1.5, 0.25]
+    this.cost = this.cellCost[this.type] || 1;
+    this.waterS = false;
+    this.waterD = false;
 
     this.getRandomIntInclusive = function(min, max) {
         min = Math.ceil(min);
@@ -53,7 +53,19 @@ function Cell(x, y, width, height) {
         var drawY = this.y * this.height + 1.5;
 
         ctx.fillRect(drawX, drawY, this.width - 2, this.height - 2);
-        ctx.strokeStyle = fillColor;
+        ctx.strokeStyle = borderColor;
         ctx.strokeRect(drawX, drawY, this.width - 2, this.height - 2);
+    }
+
+    this.showBold = function(ctx, borderColor, fillColor) {
+        ctx.fillStyle = fillColor;
+        var drawX = this.x * this.width;
+        var drawY = this.y * this.height;
+
+        ctx.fillRect(drawX, drawY, this.width, this.height);
+        ctx.strokeStyle = borderColor;
+        ctx.lineWidth = 2;
+        ctx.strokeRect(drawX, drawY, this.width, this.height);
+        ctx.lineWidth = 1;
     }
 }

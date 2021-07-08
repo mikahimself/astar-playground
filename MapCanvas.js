@@ -15,6 +15,17 @@ function MapCanvas(aStar) {
     this.currentSquare = new Cell();
     this.walls = [];
     this.forests = [];
+    this.scenery = [];
+    this.WALLFILL = "#333";
+    this.WALLBORDER = "#111";
+    this.FLOOR = "#C8AB83";
+    this.GRASS =  "#7FD99D"
+    this.WATER = "#399BDC";
+    this.ROAD = "#FFE6A7";
+    this.PATH = "#F04265";
+    this.PATHBORDER = "#840B23";
+    this.TARGET = "#f00d";
+
 
     this.getData = async function() {
         var mapData = await fetch("http://localhost:3000/api/map", {
@@ -40,36 +51,37 @@ function MapCanvas(aStar) {
         this.baseMap = data;
         this.mapData = new Array(data.length);
         this.setMeasurements(data);
-
+        console.log(data.length)
         for (let y = 0; y < data.length; y++) {
              this.mapData[y] = new Array(data[y].length)
         }
         for (let y = 0; y < data.length; y++) {
              for (let x = 0; x < data[y].length; x++) {
-                 this.mapData[y][x] = new Cell(x, y, this.tileW, this.tileH);
-                 if (this.mapData[y][x].wall) {
-                     this.walls.push(this.mapData[y][x]);
-                 }
-                 if (data[y][x] == 1) {
-                     this.forests.push(this.mapData[y][x]);
-                     this.mapData[y][x].cost = 4;
+                this.mapData[y][x] = new Cell(x, y, this.tileW, this.tileH, data[y][x]);
+                if (this.mapData[y][x].type != 0) {
+                    this.scenery.push(this.mapData[y][x])
                  }
              }
         }
         // Map neighbors
         this.mapData.map(subMap => subMap.map(item => item.getNeighbors(this.mapData)));
 
-        this.startPos = this.mapData[2][8];
+        this.startPos = this.mapData[1][1];
         this.drawMap(data)
         this.prevSquare.width = this.tileW;
         this.prevSquare.height = this.tileH;
         this.currentSquare.width = this.tileW;
         this.currentSquare.height = this.tileH;
-        this.drawWalls();
+        this.drawScenery();
     }
 
     this.getCanvasPosition = function(e) {
-        return [Math.floor(e.offsetX / this.tileW), Math.floor(e.offsetY / this.tileH)];
+        let gridX = Math.floor(e.offsetX / this.tileW);
+        let gridY = Math.floor(e.offsetY / this.tileH);
+        gridX = Math.min(Math.max(gridX, 0), this.mapData[0].length - 1);
+        gridY = Math.min(Math.max(gridY, 0), this.mapData.length - 1);
+
+        return [gridX, gridY];
     }
 
     this.getCanvasClick = function(e) {
@@ -82,53 +94,47 @@ function MapCanvas(aStar) {
         this.drawMap(this.baseMap);
         
         this.endPos = this.mapData[gridY][gridX];
-        this.startPos = this.mapData[2][8];
+        this.startPos = this.mapData[1][1];
         this.path = this.aStar.findRoute(this.startPos, this.endPos);
-        console.log(this.path)
         if (this.path) {
             this.drawSetSquares(this.path[1], this.path[2]);
-            //this.drawForests();
-
             for (let cell of this.path[0]) {
                 cell.show(this.ctx, "#000", "#FFC107")
             }
         } else {
             console.log("no dice")
         }
-        this.drawWalls();
+        this.drawScenery();
     }
 
     this.drawPointerSquare = function(e) {
         var [ gridX, gridY ] = this.getCanvasPosition(e);
-        if (gridX == this.currentSquare.x && gridY == this.currentSquare.y) {
-            //;
-        } else {
-            this.prevSquare.x = this.currentSquare.x;
-            this.prevSquare.y = this.currentSquare.y;
-            this.currentSquare.x = gridX;
-            this.currentSquare.y = gridY;
-            this.prevSquare.show(this.ctx, "#fff", "#fff")
-            if (this.path) {
-                this.drawSetSquares(this.path[1], this.path[2]);
-            }
-            // this.drawForests();
-            let tempPath = this.aStar.findRoute(this.startPos, this.mapData[gridY][gridX]);
-            if (tempPath) {
-                this.path = tempPath;
-                this.drawMap(this.baseMap);
-                this.drawSetSquares(this.path[1], this.path[2]);
-            }
-            
-            this.drawPath();
-            this.currentSquare.show(this.ctx, "#000", "#0f0");
+
+        this.prevSquare.x = this.currentSquare.x;
+        this.prevSquare.y = this.currentSquare.y;
+        this.currentSquare.x = gridX;
+        this.currentSquare.y = gridY;
+
+        if (this.path) {
+            this.drawSetSquares(this.path[1], this.path[2]);
         }
-        this.drawWalls();
+
+        let tempPath = this.aStar.findRoute(this.startPos, this.mapData[gridY][gridX]);
+        if (tempPath) {
+            this.path = tempPath;
+        }
+        this.drawMap(this.baseMap);
+        this.drawScenery();
+        this.drawSetSquares(this.path[1], this.path[2]);
+        this.drawPath();
+        this.currentSquare.showBold(this.ctx, "#000", "#43c76f");
+        this.startPos.showBold(this.ctx, "#fff", "#fff")
     }
 
     this.drawPath = function() {
         if (this.path.length > 0) {
             for (let cell of this.path[0]) {
-                cell.show(this.ctx, "#000", "#FFC107")
+                cell.show(this.ctx, this.PATHBORDER, this.PATH);
             }
         }
     }
@@ -136,9 +142,8 @@ function MapCanvas(aStar) {
     this.drawMap = function(map) {
         this.ctx.fillStyle = "#fff";
         this.ctx.fillRect(0,0, 400, 400);
-        this.ctx.strokeStyle = "#111";
+        this.ctx.strokeStyle = "#595758";
         this.ctx.globalAlpha = 1;
-
 
         for (let y = 0; y <= map.length; y++) {
             this.ctx.beginPath();
@@ -153,24 +158,34 @@ function MapCanvas(aStar) {
         if (closedSet && closedSet.length > 0) {
             let newToDraw = closedSet.filter(item => !this.drawnClosed.includes(item))
             this.drawnClosed.push(...newToDraw)
-            closedSet.map(item => item.show(this.ctx, "#000", "#D81B60"))
+            closedSet.map(item => item.show(this.ctx, "#00000022", "#00000022"))
         }
-        if (typeof openSet != "undefined" && openSet.length > 0) {
-            let newOpenToDraw = openSet.filter(item => !this.drawnOpen.includes(item) && !this.drawnClosed.includes(item));
-            this.drawnOpen.push(...newOpenToDraw)
-            openSet.map(item => item.show(this.ctx, "#000", "#1E88E5"));
-        }
+        // if (typeof openSet != "undefined" && openSet.length > 0) {
+        //     let newOpenToDraw = openSet.filter(item => !this.drawnOpen.includes(item) && !this.drawnClosed.includes(item));
+        //     this.drawnOpen.push(...newOpenToDraw)
+        //     openSet.map(item => item.show(this.ctx, "#000", "#1E88E533"));
+        // }
     }
 
-    this.drawWalls = function() {
-        for (let wall of this.walls) {
-            wall.show(this.ctx, "#111", "#333");
-        }
-        
-    }
-    this.drawForests = function() {
-        for (let forest of this.forests) {
-            forest.show(this.ctx, "#0f0", "#0f0");
+    this.drawScenery = function() {
+        for (let tile of this.scenery) {
+            switch (tile.type) {
+                case 1:
+                    tile.show(this.ctx, this.WALLBORDER, this.WALLFILL);
+                    break;
+                case 2:
+                    tile.show(this.ctx, this.WATER, this.WATER);
+                    break;
+                case 3:
+                    tile.show(this.ctx, this.FLOOR, this.FLOOR);
+                    break;
+                case 4:
+                    tile.show(this.ctx, this.GRASS, this.GRASS);
+                    break;
+                case 5:
+                    tile.show(this.ctx, this.ROAD, this.ROAD);
+                    break;
+            }
         }
     }
 }

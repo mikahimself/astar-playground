@@ -51,7 +51,7 @@ function MapCanvas(aStar) {
         this.baseMap = data;
         this.mapData = new Array(data.length);
         this.setMeasurements(data);
-        console.log(data.length)
+
         for (let y = 0; y < data.length; y++) {
              this.mapData[y] = new Array(data[y].length)
         }
@@ -101,8 +101,6 @@ function MapCanvas(aStar) {
             for (let cell of this.path[0]) {
                 cell.show(this.ctx, "#000", "#FFC107")
             }
-        } else {
-            console.log("no dice")
         }
         this.drawScenery();
     }

@@ -32,9 +32,21 @@ function Cell(x, y, width, height, type) {
         
         if (this.x + 1 <= cols - 1) {
             this.neighbors.push(grid[this.y][this.x + 1]);
+            if (this.y + 1 <= rows - 1) {
+                this.neighbors.push(grid[this.y + 1][x + 1])
+            }
+            if (this.y > 0) {
+                this.neighbors.push(grid[this.y - 1][x + 1])
+            }
         }
         if (this.x > 0) {
             this.neighbors.push(grid[this.y][this.x - 1]);
+            if (this.y + 1 <= rows - 1) {
+                this.neighbors.push(grid[this.y + 1][x - 1])
+            }
+            if (this.y > 0) {
+                this.neighbors.push(grid[this.y - 1][x - 1])
+            }
         }
         if (this.y + 1 <= rows - 1) {
             this.neighbors.push(grid[this.y + 1][this.x]);

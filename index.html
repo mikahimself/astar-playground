@@ -79,6 +79,7 @@
         function setHeuristicType(e) {
             heuristicType = e.target.value;
             aStar.setHeuristicType(heuristicType);
+            mapCanvas.mapNeighbours();
         }
 
         function setNeighbourType(e) {

@@ -3,6 +3,7 @@ function AStar(heuristicType) {
     this.closedSet = []
     this.start;
     this.end;
+    this.useDiagonals = false;
     this.heuristicType = heuristicType || "euclidean";
 
     this.resetValues = function () {
@@ -13,6 +14,10 @@ function AStar(heuristicType) {
 
     this.setHeuristicType = function(type) {
         this.heuristicType = type;
+    }
+
+    this.setNeighbourType = function(useDiagonals) {
+        this.useDiagonals = useDiagonals;
     }
 
     this.findPath = function(pointFrom) {

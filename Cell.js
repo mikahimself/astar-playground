@@ -26,9 +26,29 @@ function Cell(x, y, width, height, type) {
         return other.x == this.x && other.y == this.y;
     }
 
+    this.getSimpleNeighbors = function (grid) {
+        var cols = grid[0].length;
+        var rows = grid.length;
+        this.neighbors = [];
+        
+        if (this.x + 1 <= cols - 1) {
+            this.neighbors.push(grid[this.y][this.x + 1]);
+        }
+        if (this.x > 0) {
+            this.neighbors.push(grid[this.y][this.x - 1]);
+        }
+        if (this.y + 1 <= rows - 1) {
+            this.neighbors.push(grid[this.y + 1][this.x]);
+        }
+        if (this.y > 0) {
+            this.neighbors.push(grid[this.y - 1][this.x]);
+        }
+    }
+
     this.getNeighbors = function (grid) {
         var cols = grid[0].length;
         var rows = grid.length;
+        this.neighbors = [];
         
         if (this.x + 1 <= cols - 1) {
             this.neighbors.push(grid[this.y][this.x + 1]);

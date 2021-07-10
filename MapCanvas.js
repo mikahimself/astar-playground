@@ -4,6 +4,7 @@ function MapCanvas(aStar) {
     this.mapData;
     this.startPos = new Cell();
     this.endPos = new Cell();
+    this.previousEndPos = new Cell();
     this.tileH;
     this.tileW;
     this.path = [];
@@ -66,9 +67,20 @@ function MapCanvas(aStar) {
              }
         }
         // Map neighbors
-        this.mapData.map(subMap => subMap.map(item => item.getNeighbors(this.mapData)));
+        this.mapNeighbours();
         this.startPos = this.mapData[1][1];
 
+        this.drawCanvasContents();
+    }
+
+    this.mapNeighbours = function() {
+        if (this.aStar.useDiagonals) {
+            this.mapData.map(subMap => subMap.map(item => item.getNeighbors(this.mapData)));
+        } else {
+            this.mapData.map(subMap => subMap.map(item => item.getSimpleNeighbors(this.mapData)));
+        }
+        let tempPath = this.aStar.findRoute(this.startPos, this.previousEndPos);
+        [this.path, this.openSet, this.closedSet] = tempPath;
         this.drawCanvasContents();
     }
 
@@ -104,12 +116,14 @@ function MapCanvas(aStar) {
 
     this.drawPointerSquare = function(e) {
         var [ gridX, gridY ] = this.getCanvasPosition(e);
+
         this.endPos = this.mapData[gridY][gridX];
 
         let tempPath = this.aStar.findRoute(this.startPos, this.endPos);
         if (tempPath) {
             [this.path, this.openSet, this.closedSet] = tempPath;
             this.pathInvalid = false;
+            this.previousEndPos = this.endPos;
         } else {
             this.pathInvalid = true;
         }

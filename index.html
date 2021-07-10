@@ -8,7 +8,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;1,400&display=swap" rel="stylesheet">
-    <title>Tbonk otabix</title>
+    <title>A* Playground</title>
 </head>
 <body>
     <div class="container">
@@ -27,6 +27,22 @@
                     <div class="option-content">
                         <input type="radio" id="heuristic-manhattan" name="heuristic-type" value="manhattan">
                         <label for="heuristic-manhattan">Manhattan</label>
+                    </div>
+                </form>
+            </div>
+
+            <div class="option-container">
+                <div class="option-title">
+                    Square neighbours
+                </div>
+                <form class="option-form">
+                    <div class="option-content">
+                        <input type="radio" id="right-angles-only" name="neighbour-type" value="" checked>
+                        <label for="right-angles-only">Right angles only</label>
+                    </div>
+                    <div class="option-content">
+                        <input type="radio" id="right-and-diagonal" name="neighbour-type" value="1">
+                        <label for="heuristic-manhattan">Right angles and diagonals</label>
                     </div>
                 </form>
             </div>
@@ -55,11 +71,19 @@
             document.querySelectorAll("input[name='heuristic-type']").forEach((input) => {
                 input.addEventListener("change", setHeuristicType);
             });
+            document.querySelectorAll("input[name='neighbour-type']").forEach((input) => {
+                input.addEventListener("change", setNeighbourType);
+            });
         }
 
         function setHeuristicType(e) {
             heuristicType = e.target.value;
             aStar.setHeuristicType(heuristicType);
+        }
+
+        function setNeighbourType(e) {
+            aStar.setNeighbourType(Boolean(e.target.value));
+            mapCanvas.mapNeighbours();
         }
     </script>
 </body>

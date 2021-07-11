@@ -30,6 +30,7 @@ function Cell(x, y, width, height, type) {
         var cols = grid[0].length;
         var rows = grid.length;
         this.neighbors = [];
+        this.previous = undefined;
         
         if (this.x + 1 <= cols - 1) {
             this.neighbors.push(grid[this.y][this.x + 1]);
@@ -49,6 +50,7 @@ function Cell(x, y, width, height, type) {
         var cols = grid[0].length;
         var rows = grid.length;
         this.neighbors = [];
+        this.previous = undefined;
         
         if (this.x + 1 <= cols - 1) {
             this.neighbors.push(grid[this.y][this.x + 1]);
@@ -99,5 +101,8 @@ function Cell(x, y, width, height, type) {
         ctx.lineWidth = 2;
         ctx.strokeRect(drawX, drawY, this.width, this.height);
         ctx.lineWidth = 1;
+    }
+    this.getCoords = function() {
+        return `X: ${this.x}, y: ${this.y}`;
     }
 }

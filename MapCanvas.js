@@ -30,6 +30,9 @@ function MapCanvas(aStar) {
     this.BLACK = "#000";
     this.WHITE = "#FFF"
 
+    // Dragging
+    this.dragStart = false;
+    this.dragEnd = false;
 
     this.getData = async function() {
         var data = await fetch("http://localhost:3000/api/map", {
@@ -42,8 +45,11 @@ function MapCanvas(aStar) {
     this.setupCanvas = function() {
         this.canvas = document.getElementById("myCanvas");
         this.ctx = this.canvas.getContext("2d");
-        this.canvas.addEventListener("click", this.getCanvasClick.bind(this));
-        this.canvas.addEventListener("mousemove", this.drawPointerSquare.bind(this));
+        //this.canvas.addEventListener("click", this.getCanvasClick.bind(this));
+        this.canvas.addEventListener("mousedown", this.getCanvasClick.bind(this));
+        this.canvas.addEventListener("mouseup", this.getDragEnd.bind(this));
+        // this.canvas.addEventListener("mousemove", this.drawPointerSquare.bind(this));
+        this.canvas.addEventListener("mousemove", this.dragSquare.bind(this));
     }
 
     this.setMeasurements = function(data) {
@@ -67,8 +73,9 @@ function MapCanvas(aStar) {
              }
         }
         // Map neighbors
-        this.mapNeighbours();
         this.startPos = this.mapData[1][1];
+        this.endPos = this.mapData[9][9];
+        this.mapNeighbours();
 
         this.drawCanvasContents();
     }
@@ -79,8 +86,11 @@ function MapCanvas(aStar) {
         } else {
             this.mapData.map(subMap => subMap.map(item => item.getSimpleNeighbors(this.mapData)));
         }
-        let tempPath = this.aStar.findRoute(this.startPos, this.previousEndPos);
-        [this.path, this.openSet, this.closedSet] = tempPath;
+        let tempPath = this.aStar.findRoute(this.startPos, this.endPos);
+        this.path = tempPath[0]
+        this.openSet = tempPath[1]
+        this.closedSet = tempPath[2]
+        // [this.path, this.openSet, this.closedSet] = tempPath;
         this.drawCanvasContents();
     }
 
@@ -93,25 +103,60 @@ function MapCanvas(aStar) {
         return [gridX, gridY];
     }
 
+    this.dragSquare = function(e) {
+        let [dragX, dragY] = this.getCanvasPosition(e);
+        if (this.dragStart) {
+            if (!this.mapData[dragY][dragX].wall) {
+                if (dragX != this.startPos.x || dragY != this.startPos.y) {
+                    this.startPos = this.mapData[dragY][dragX];
+                }
+                
+            }
+        } else if (this.dragEnd) {
+            if (!this.mapData[dragY][dragX].wall) {
+                if (dragX != this.endPos.x || dragY != this.endPos.y) {
+                    this.endPos = this.mapData[dragY][dragX];
+                }
+            }
+        }
+        if (this.dragStart || this.dragEnd) {
+            this.mapNeighbours();
+        }
+    }
+
+    this.getDragEnd = function(e) {
+        if (this.dragStart) {
+            this.dragStart = false;
+        }
+        if (this.dragEnd) {
+            this.dragEnd = false;
+        }
+    }
+
     this.getCanvasClick = function(e) {
         var [ gridX, gridY ] = this.getCanvasPosition(e);
+        if (this.startPos.x == gridX && this.startPos.y == gridY) {
+            this.dragStart = true;
+        } else if (this.endPos.x == gridX && this.endPos.y == gridY) {
+            this.dragEnd = true;
+        }
 
         if (this.mapData[gridY][gridX].wall) {
             return;    
         }
         
-        this.drawGrid();
+        // this.drawGrid();
         
-        this.endPos = this.mapData[gridY][gridX];
-        this.startPos = this.mapData[1][1];
-        [this.path, this.openSet, this.closedSet] = this.aStar.findRoute(this.startPos, this.endPos);
-        if (this.path) {
-            this.drawSetSquares(this.path[1], this.path[2]);
-            for (let cell of this.path[0]) {
-                cell.show(this.ctx, this.BLACK, "#FFC107")
-            }
-        }
-        this.drawScenery();
+        // this.endPos = this.mapData[gridY][gridX];
+        // this.startPos = this.mapData[1][1];
+        // [this.path, this.openSet, this.closedSet] = this.aStar.findRoute(this.startPos, this.endPos);
+        // if (this.path) {
+        //     this.drawSetSquares(this.path[1], this.path[2]);
+        //     for (let cell of this.path[0]) {
+        //         cell.show(this.ctx, this.BLACK, "#FFC107")
+        //     }
+        // }
+        // this.drawScenery();
     }
 
     this.drawPointerSquare = function(e) {
@@ -136,17 +181,13 @@ function MapCanvas(aStar) {
             for (let cell of this.path) {
                 cell.show(this.ctx, this.PATHBORDER, this.PATH);
             }
-            if (this.pathInvalid) {
-                this.endPos.showBold(this.ctx, this.BLACK, this.TARGET_INVALID);
-            } else {
                 this.endPos.showBold(this.ctx, this.BLACK, this.TARGET);
-            }
-            this.startPos.showBold(this.ctx, "#fff", "#fff")
+            this.startPos.showBold(this.ctx, "#fff", "#00f")
         }
     }
 
     this.drawGrid = function() {
-        this.ctx.fillStyle = this.WHITE;
+        this.ctx.fillStyle = this.BLACK;
         this.ctx.fillRect(0,0, 400, 400);
         this.ctx.strokeStyle = "#595758";
         this.ctx.globalAlpha = 1;

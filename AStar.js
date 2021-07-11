@@ -9,7 +9,6 @@ function AStar(heuristicType) {
     this.resetValues = function () {
         this.closedSet = [];
         this.openSet = [];
-        this.loopSet = true;
     }
 
     this.setHeuristicType = function(type) {
@@ -41,8 +40,6 @@ function AStar(heuristicType) {
 
     this.findRoute = function(start, end) {
         this.resetValues()
-        this.start = start;
-        this.end = end;
         this.openSet.push(start);
         var current;
 
@@ -64,12 +61,8 @@ function AStar(heuristicType) {
             this.closedSet.push(current);
 
             // If the item with the lowest f is the goal, we're done.
-            if (current.equals(this.end)) {
+            if (current.equals(end)) {
                 var path = this.findPath(current);
-                // drawSetSquares();
-                // for (let cell of path) {
-                //     cell.show(ctx, "#000", "#FFC107")
-                // }
                 return [path, this.openSet, this.closedSet];
             }
 

@@ -45,10 +45,8 @@ function MapCanvas(aStar) {
     this.setupCanvas = function() {
         this.canvas = document.getElementById("myCanvas");
         this.ctx = this.canvas.getContext("2d");
-        //this.canvas.addEventListener("click", this.getCanvasClick.bind(this));
         this.canvas.addEventListener("mousedown", this.getCanvasClick.bind(this));
         this.canvas.addEventListener("mouseup", this.getDragEnd.bind(this));
-        // this.canvas.addEventListener("mousemove", this.drawPointerSquare.bind(this));
         this.canvas.addEventListener("mousemove", this.dragSquare.bind(this));
     }
 
@@ -144,19 +142,6 @@ function MapCanvas(aStar) {
         if (this.mapData[gridY][gridX].wall) {
             return;    
         }
-        
-        // this.drawGrid();
-        
-        // this.endPos = this.mapData[gridY][gridX];
-        // this.startPos = this.mapData[1][1];
-        // [this.path, this.openSet, this.closedSet] = this.aStar.findRoute(this.startPos, this.endPos);
-        // if (this.path) {
-        //     this.drawSetSquares(this.path[1], this.path[2]);
-        //     for (let cell of this.path[0]) {
-        //         cell.show(this.ctx, this.BLACK, "#FFC107")
-        //     }
-        // }
-        // this.drawScenery();
     }
 
     this.drawPointerSquare = function(e) {
@@ -207,11 +192,6 @@ function MapCanvas(aStar) {
             this.drawnClosed.push(...newToDraw)
             this.closedSet.map(item => item.show(this.ctx, "#00000022", "#00000022"))
         }
-        // if (typeof openSet != "undefined" && openSet.length > 0) {
-        //     let newOpenToDraw = openSet.filter(item => !this.drawnOpen.includes(item) && !this.drawnClosed.includes(item));
-        //     this.drawnOpen.push(...newOpenToDraw)
-        //     openSet.map(item => item.show(this.ctx, "#000", "#1E88E533"));
-        // }
     }
 
     this.drawScenery = function() {

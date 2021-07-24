@@ -1,10 +1,7 @@
 const express = require('express');
+const cors = require('cors');
 const app = express();
-const path = require("path")
-const http = require('http');
-const server = http.createServer(app);
-const { Server } = require("socket.io");
-const io = new Server(server);
+app.use(cors());
 
 const grid = 
     { map: [
@@ -47,21 +44,12 @@ const grid =
         [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     ]};
 
-io.on("connection", (socket) => {
-    console.log("User connected: " + socket.id);
-})
-
-server.listen(3000, () => {
-    console.log("Listening on 3000")
-})
-
-app.use(express.static("."))
+app.listen();
 
 app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, '/index.html'));});
-
-
+    res.send('Hello World!');
+});
+        
 app.get("/api/map", (req, res) => {
-    console.log("User requested map");
     res.json(grid)
-})
+});

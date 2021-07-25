@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const app = express();
+const port = 3000;
 app.use(cors());
 
 const grid = 
@@ -44,12 +45,15 @@ const grid =
         [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
     ]};
 
-app.listen();
+app.listen(port, () => {
+    console.log(`Listening on ${port}.`);
+});
 
 app.get('/', (req, res) => {
     res.send('Hello World!');
 });
         
 app.get("/api/map", (req, res) => {
+    console.log("User requested map.")
     res.json(grid)
 });

@@ -57,13 +57,16 @@
     <script src="https://cdn.socket.io/3.1.3/socket.io.min.js" integrity="sha384-cPwlPLvBTa3sKAgddT6krw0cJat7egBga3DJepJyrLl4Q9/5WLra3rrnMcyTyOnh" crossorigin="anonymous"></script>
     <script src="Cell.js"></script>
     <script src="AStar.js"></script>
-    <script src="MapCanvas.js"></script>
-    <script>
+    <script src="Loader.js"></script>
+    <script src="Colors.js" type="module"></script>
+    <script  type="module" src="MapCanvas.js" ></script>
+    <script type="module">
+        import { MapCanvas } from "./MapCanvas.js";
         //var socket = io("http://localhost:3000");
         var aStar = new AStar();
-        var mapCanvas = new MapCanvas(aStar);
-        mapCanvas.setupCanvas();
-        mapCanvas.getData()
+        var loader = new Loader();
+        var mapCanvas = new MapCanvas(aStar, loader);
+        mapCanvas.setupMapCanvas();
 
         setupPage()
 
@@ -77,14 +80,15 @@
         }
 
         function setHeuristicType(e) {
-            heuristicType = e.target.value;
-            aStar.setHeuristicType(heuristicType);
+            aStar.setHeuristicType(e.target.value);
             mapCanvas.mapNeighbours();
+            mapCanvas.updateRoute();
         }
 
         function setNeighbourType(e) {
             aStar.setNeighbourType(Boolean(e.target.value));
             mapCanvas.mapNeighbours();
+            mapCanvas.updateRoute();
         }
     </script>
 </body>

@@ -1,0 +1,14 @@
+export const WALLFILL = "#333";
+export const WALLBORDER = "#111";
+export const FLOOR = "#C8AB83";
+export const GRASS =  "#7FD99D"
+export const WATER = "#399BDC";
+export const ROAD = "#FFE6A7";
+export const PATH = "#F04265";
+export const PATHBORDER = "#840B23";
+export const TARGET = "#43C76F";
+export const TARGET_INVALID = "#F00D";
+export const BLACK = "#000";
+export const WHITE = "#FFF";
+export const GRIDLINE = "#595758";
+export const CLOSEDSET = "#00000022";

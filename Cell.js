@@ -1,8 +1,6 @@
-function Cell(x, y, width, height, type) {
+function Cell(x, y, type) {
     this.x = x || 0;
     this.y = y || 0;
-    this.width = width || 10;
-    this.height = height || 10;
     this.neighbors = [];
     this.f = 0;
     this.g = 0; // cost of path from start node to n
@@ -12,8 +10,6 @@ function Cell(x, y, width, height, type) {
     this.wall = this.type == 1;
     this.cellCost = [1, Infinity, 8, 1, 1.5, 0.25]
     this.cost = this.cellCost[this.type] || 1;
-    this.waterS = false;
-    this.waterD = false;
 
     this.getRandomIntInclusive = function(min, max) {
         min = Math.ceil(min);
@@ -78,30 +74,41 @@ function Cell(x, y, width, height, type) {
         }
     }
 
-    // Draw Cell onto grid
-    // 0.5 added to position axes because grid lines have a 0.5 pixel
-    // offset to prevent blurriness.
-    this.show = function(ctx, borderColor, fillColor) {
+    /**
+     * Draws a cell onto the grid using an offset that prevents canvas blurriness
+     * 
+     * @param {context} ctx Canvas context
+     * @param {string} borderColor Border color as a HEX string
+     * @param {sting} fillColor Fill color as a HEX string
+     * @param {number} width Width of the cell
+     * @param {number} height Height of the cell
+     */
+    this.show = function(ctx, borderColor, fillColor, width, height) {
         ctx.fillStyle = fillColor;
-        var drawX = this.x * this.width  + 1.5;
-        var drawY = this.y * this.height + 1.5;
+        var drawX = this.x * width  + 1.5;
+        var drawY = this.y * height + 1.5;
 
-        ctx.fillRect(drawX, drawY, this.width - 2, this.height - 2);
+        ctx.fillRect(drawX, drawY, width - 2, height - 2);
         ctx.strokeStyle = borderColor;
-        ctx.strokeRect(drawX, drawY, this.width - 2, this.height - 2);
+        ctx.strokeRect(drawX, drawY, width - 2, height - 2);
     }
 
-    this.showBold = function(ctx, borderColor, fillColor) {
+    this.showBold = function(ctx, borderColor, fillColor, width, height) {
         ctx.fillStyle = fillColor;
-        var drawX = this.x * this.width;
-        var drawY = this.y * this.height;
+        var drawX = this.x * width;
+        var drawY = this.y * height;
 
-        ctx.fillRect(drawX, drawY, this.width, this.height);
+        ctx.fillRect(drawX, drawY, width, height);
         ctx.strokeStyle = borderColor;
         ctx.lineWidth = 2;
-        ctx.strokeRect(drawX, drawY, this.width, this.height);
+        ctx.strokeRect(drawX, drawY, width, height);
         ctx.lineWidth = 1;
     }
+
+    this.matchLocation = function (otherX, otherY) {
+        return this.x == otherX && this.y == otherY;
+    }
+
     this.getCoords = function() {
         return `X: ${this.x}, y: ${this.y}`;
     }
